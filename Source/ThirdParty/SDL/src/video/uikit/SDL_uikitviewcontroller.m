@@ -18,9 +18,6 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-
-// Modified by Lasse Oorni for Urho3D
-
 #include "../../SDL_internal.h"
 
 #if SDL_VIDEO_DRIVER_UIKIT
@@ -124,8 +121,11 @@
 
 - (BOOL)prefersStatusBarHidden
 {
-    // Urho3D: always prefer the status bar hidden
-    return YES;
+    if (self->window->flags & (SDL_WINDOW_FULLSCREEN|SDL_WINDOW_BORDERLESS)) {
+        return YES;
+    } else {
+        return NO;
+    }
 }
 
 @end

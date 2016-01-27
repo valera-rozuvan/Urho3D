@@ -18,9 +18,6 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-
-// Modified by Lasse Oorni for Urho3D
-
 #include "../SDL_internal.h"
 
 /* General mouse handling code for SDL */
@@ -495,10 +492,6 @@ SDL_WarpMouseInWindow(SDL_Window * window, int x, int y)
     } else {
         SDL_SendMouseMotion(window, mouse->mouseID, 0, x, y);
     }
-
-    // Urho3D: update mouse internal state immediately
-    mouse->last_x = mouse->x = x;
-    mouse->last_y = mouse->y = y;
 }
 
 static SDL_bool
