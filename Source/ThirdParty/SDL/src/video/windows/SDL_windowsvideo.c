@@ -18,9 +18,6 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-
-// Modified by Lasse Oorni for Urho3D
-
 #include "../../SDL_internal.h"
 
 #if SDL_VIDEO_DRIVER_WINDOWS
@@ -90,11 +87,6 @@ WIN_CreateDevice(int devindex)
         data->CloseTouchInputHandle = (BOOL (WINAPI *)( HTOUCHINPUT )) SDL_LoadFunction(data->userDLL, "CloseTouchInputHandle");
         data->GetTouchInputInfo = (BOOL (WINAPI *)( HTOUCHINPUT, UINT, PTOUCHINPUT, int )) SDL_LoadFunction(data->userDLL, "GetTouchInputInfo");
         data->RegisterTouchWindow = (BOOL (WINAPI *)( HWND, ULONG )) SDL_LoadFunction(data->userDLL, "RegisterTouchWindow");
-        
-        // Urho3D: call SetProcessDPIAware if available to prevent Windows 8.1 from performing unwanted scaling
-        data->SetProcessDPIAware = (BOOL (WINAPI *)()) SDL_LoadFunction(data->userDLL, "SetProcessDPIAware");
-        if (data->SetProcessDPIAware)
-            data->SetProcessDPIAware();
     }
 
     /* Set the function pointers */
@@ -253,9 +245,6 @@ SDL_Direct3D9GetAdapterIndex( int displayIndex )
 	}
 }
 
-// Urho3D: dxgi may not be available on MinGW
-#ifdef _MSC_VER
-
 #define CINTERFACE
 #define COBJMACROS
 #include <dxgi.h>
@@ -340,7 +329,6 @@ SDL_DXGIGetOutputInfo( int displayIndex, int *adapterIndex, int *outputIndex )
 		SDL_UnloadObject(pDXGIDLL);
 	}
 }
-#endif
 
 #endif /* SDL_VIDEO_DRIVER_WINDOWS */
 

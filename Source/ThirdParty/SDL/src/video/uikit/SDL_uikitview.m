@@ -18,9 +18,6 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-
-// Modified by Lasse Oorni & OvermindDL1 for Urho3D
-
 #include "../../SDL_internal.h"
 
 #if SDL_VIDEO_DRIVER_UIKIT
@@ -93,12 +90,11 @@ void _uikit_keyboard_init() ;
         if (!leftFingerDown) {
             CGPoint locationInView = [self touchLocation:touch shouldNormalize:NO];
 
-            // Urho3D: do not send emulated mouse events
             /* send moved event */
-            //SDL_SendMouseMotion(NULL, SDL_TOUCH_MOUSEID, 0, locationInView.x, locationInView.y);
+            SDL_SendMouseMotion(NULL, SDL_TOUCH_MOUSEID, 0, locationInView.x, locationInView.y);
 
             /* send mouse down event */
-            //SDL_SendMouseButton(NULL, SDL_TOUCH_MOUSEID, SDL_PRESSED, SDL_BUTTON_LEFT);
+            SDL_SendMouseButton(NULL, SDL_TOUCH_MOUSEID, SDL_PRESSED, SDL_BUTTON_LEFT);
 
             leftFingerDown = touch;
         }
@@ -134,7 +130,7 @@ void _uikit_keyboard_init() ;
     while(touch) {
         if (touch == leftFingerDown) {
             /* send mouse up */
-            //SDL_SendMouseButton(NULL, SDL_TOUCH_MOUSEID, SDL_RELEASED, SDL_BUTTON_LEFT);
+            SDL_SendMouseButton(NULL, SDL_TOUCH_MOUSEID, SDL_RELEASED, SDL_BUTTON_LEFT);
             leftFingerDown = nil;
         }
 
@@ -177,7 +173,7 @@ void _uikit_keyboard_init() ;
             CGPoint locationInView = [self touchLocation:touch shouldNormalize:NO];
 
             /* send moved event */
-            //SDL_SendMouseMotion(NULL, SDL_TOUCH_MOUSEID, 0, locationInView.x, locationInView.y);
+            SDL_SendMouseMotion(NULL, SDL_TOUCH_MOUSEID, 0, locationInView.x, locationInView.y);
         }
 
         CGPoint locationInView = [self touchLocation:touch shouldNormalize:YES];
@@ -257,8 +253,8 @@ void _uikit_keyboard_init() ;
 {
     if ([string length] == 0) {
         /* it wants to replace text with nothing, ie a delete */
-        SDL_SendKeyboardKey(SDL_PRESSED, 0, SDL_SCANCODE_BACKSPACE);
-        SDL_SendKeyboardKey(SDL_RELEASED, 0, SDL_SCANCODE_BACKSPACE);
+        SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_BACKSPACE);
+        SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_BACKSPACE);
     }
     else {
         /* go through all the characters in the string we've been sent
@@ -284,14 +280,14 @@ void _uikit_keyboard_init() ;
 
             if (mod & KMOD_SHIFT) {
                 /* If character uses shift, press shift down */
-                SDL_SendKeyboardKey(SDL_PRESSED, 0, SDL_SCANCODE_LSHIFT);
+                SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_LSHIFT);
             }
             /* send a keydown and keyup even for the character */
-            SDL_SendKeyboardKey(SDL_PRESSED, 0, code);
-            SDL_SendKeyboardKey(SDL_RELEASED, 0, code);
+            SDL_SendKeyboardKey(SDL_PRESSED, code);
+            SDL_SendKeyboardKey(SDL_RELEASED, code);
             if (mod & KMOD_SHIFT) {
                 /* If character uses shift, press shift back up */
-                SDL_SendKeyboardKey(SDL_RELEASED, 0, SDL_SCANCODE_LSHIFT);
+                SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_LSHIFT);
             }
         }
         SDL_SendKeyboardText([string UTF8String]);
@@ -302,8 +298,8 @@ void _uikit_keyboard_init() ;
 /* Terminates the editing session */
 - (BOOL)textFieldShouldReturn:(UITextField*)_textField
 {
-    SDL_SendKeyboardKey(SDL_PRESSED, 0, SDL_SCANCODE_RETURN);
-    SDL_SendKeyboardKey(SDL_RELEASED, 0, SDL_SCANCODE_RETURN);
+    SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_RETURN);
+    SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_RETURN);
     SDL_StopTextInput();
     return YES;
 }

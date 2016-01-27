@@ -18,9 +18,6 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-
-// Modified by Lasse Oorni and Yao Wei Tjong for Urho3D
-
 #include "../../SDL_internal.h"
 #include "SDL_stdinc.h"
 #include "SDL_assert.h"
@@ -30,7 +27,6 @@
 
 #include "SDL_system.h"
 #include "SDL_android.h"
-
 #include <EGL/egl.h>
 
 #include "../../events/SDL_events_c.h"
@@ -85,9 +81,6 @@ static jmethodID midPollInputDevices;
 static float fLastAccelerometer[3];
 static bool bHasNewData;
 
-// Urho3D: application files dir
-static char* mFilesDir = 0;
-
 /*******************************************************************************
                  Functions called by JNI
 *******************************************************************************/
@@ -114,33 +107,12 @@ jint JNI_OnLoad(JavaVM* vm, void* reserved)
     return JNI_VERSION_1_4;
 }
 
-// Urho3D: added function
-const char* SDL_Android_GetFilesDir()
-{
-    return mFilesDir;
-}
-
 /* Called before SDL_main() to initialize JNI bindings */
-// Urho3D: added passing user files directory from SDLActivity on startup
-void SDL_Android_Init(JNIEnv* mEnv, jclass cls, jstring filesDir)
+void SDL_Android_Init(JNIEnv* mEnv, jclass cls)
 {
     __android_log_print(ANDROID_LOG_INFO, "SDL", "SDL_Android_Init()");
 
     Android_JNI_SetupThread();
-
-    // Copy the files dir
-    const char *str;
-    str = (*mEnv)->GetStringUTFChars(mEnv, filesDir, 0);
-    if (str)
-    {
-        if (mFilesDir)
-            free(mFilesDir);
-
-        size_t length = strlen(str) + 1;
-        mFilesDir = (char*)malloc(length);
-        memcpy(mFilesDir, str, length);
-        (*mEnv)->ReleaseStringUTFChars(mEnv, filesDir, str);
-    }
 
     mActivityClass = (jclass)((*mEnv)->NewGlobalRef(mEnv, cls));
 
@@ -343,9 +315,6 @@ void Java_org_libsdl_app_SDLActivity_nativeLowMemory(
 void Java_org_libsdl_app_SDLActivity_nativeQuit(
                                     JNIEnv* env, jclass cls)
 {
-    // Urho3D: added log print
-    __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "nativeQuit()");
-
     /* Discard previous events. The user should have handled state storage
      * in SDL_APP_WILLENTERBACKGROUND. After nativeQuit() is called, no
      * events other than SDL_QUIT and SDL_APP_TERMINATING should fire */
@@ -1364,73 +1333,12 @@ void Android_JNI_HideTextInput()
 //////////////////////////////////////////////////////////////////////////////
 */
 
-// Urho3D - function to return a list of files under a given path in "assets" directory (caller is responsible to free the C string array)
-char** SDL_Android_GetFileList(const char* path, int* count)
-{
-    struct LocalReferenceHolder refs = LocalReferenceHolder_Setup(__FUNCTION__);
-    JNIEnv* mEnv = Android_JNI_GetEnv();
-    if (!LocalReferenceHolder_Init(&refs, mEnv))
-    {
-        LocalReferenceHolder_Cleanup(&refs);
-        return NULL;
-    }
-
-    jstring pathJString = (*mEnv)->NewStringUTF(mEnv, path);
-
-    /* context = SDLActivity.getContext(); */
-    jmethodID mid = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass,
-            "getContext","()Landroid/content/Context;");
-    jobject context = (*mEnv)->CallStaticObjectMethod(mEnv, mActivityClass, mid);
-
-    /* assetManager = context.getAssets(); */
-    mid = (*mEnv)->GetMethodID(mEnv, (*mEnv)->GetObjectClass(mEnv, context),
-            "getAssets", "()Landroid/content/res/AssetManager;");
-    jobject assetManager = (*mEnv)->CallObjectMethod(mEnv, context, mid);
-
-    /* stringArray = assetManager.list(path) */
-    mid = (*mEnv)->GetMethodID(mEnv, (*mEnv)->GetObjectClass(mEnv, assetManager), "list", "(Ljava/lang/String;)[Ljava/lang/String;");
-    jobjectArray stringArray = (*mEnv)->CallObjectMethod(mEnv, assetManager, mid, pathJString);
-    if (Android_JNI_ExceptionOccurred(true))
-    {
-        LocalReferenceHolder_Cleanup(&refs);
-        return NULL;
-    }
-
-    jsize arrayLength = (*mEnv)->GetArrayLength(mEnv, stringArray);
-    char** cStringArray = (char**)SDL_malloc(arrayLength * sizeof(char*));
-    jint i;
-    for (i = 0; i < arrayLength; ++i)
-    {
-        jstring string = (jstring)(*mEnv)->GetObjectArrayElement(mEnv, stringArray, i);
-        const char* cString = (*mEnv)->GetStringUTFChars(mEnv, string, 0);
-        cStringArray[i] = cString ? SDL_strdup(cString) : NULL;
-        (*mEnv)->ReleaseStringUTFChars(mEnv, string, cString);
-    }
-
-    *count = arrayLength;
-
-    LocalReferenceHolder_Cleanup(&refs);
-    return cStringArray;
-}
-
-// Urho3D - helper function to free the file list returned by SDL_Android_GetFileList()
-void SDL_Android_FreeFileList(char*** array, int* count)
-{
-    int i = *count;
-    if ((i > 0) && (*array != NULL))
-    {
-        while (i--)
-            SDL_free((*array)[i]);
-    }
-    SDL_free(*array);
-    *array = NULL;
-    *count = 0;
-}
-
 void *SDL_AndroidGetJNIEnv()
 {
     return Android_JNI_GetEnv();
 }
+
+
 
 void *SDL_AndroidGetActivity()
 {

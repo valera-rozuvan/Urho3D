@@ -18,9 +18,6 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-
-// Modified by OvermindDL1 for Urho3D
-
 #include "../../SDL_internal.h"
 
 #if SDL_VIDEO_DRIVER_ANDROID
@@ -285,13 +282,13 @@ TranslateKeycode(int keycode)
 int
 Android_OnKeyDown(int keycode)
 {
-    return SDL_SendKeyboardKey(SDL_PRESSED, (Uint32)(keycode), TranslateKeycode(keycode));
+    return SDL_SendKeyboardKey(SDL_PRESSED, TranslateKeycode(keycode));
 }
 
 int
 Android_OnKeyUp(int keycode)
 {
-    return SDL_SendKeyboardKey(SDL_RELEASED, (Uint32)(keycode), TranslateKeycode(keycode));
+    return SDL_SendKeyboardKey(SDL_RELEASED, TranslateKeycode(keycode));
 }
 
 SDL_bool
